@@ -11,14 +11,7 @@ An efficient system for uploading files and displaying them with a focus on spee
 - **Beautiful Appearance:** Aesthetically pleasing design for an attractive user interface.
 - **Fast Rendering:** Quick and responsive display of uploaded files.
 
----
-## 🤝 Contributing
 
-I would be thrilled to see your updates and contributions! If you have ideas, suggestions, or improvements, please feel free to contribute. Your input is highly valued.
-
-For more details on how to contribute, please check the [CONTRIBUTING.md](CONTRIBUTING.md) file.
-
-Thank you for being a part of this project!
 ---
 
 ## ⚙️ How It Works
@@ -31,7 +24,12 @@ This system is built with a clean and efficient stack:
 - **PHP:** Processes the uploaded files on the server-side. It reads files from the `assets/files` directory and dynamically generates a tree-like structure to display all uploaded files, allowing for easy navigation and access.
 
 ---
+## 🤝 Contributing
 
+I would be thrilled to see your updates and contributions! If you have ideas, suggestions, or improvements, please feel free to contribute. Your input is highly valued.
+
+Thank you for being a part of this project!
+---
 ## 🚀 Quick Start
 
 ### Prerequisites
