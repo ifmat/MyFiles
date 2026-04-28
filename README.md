@@ -12,6 +12,14 @@ An efficient system for uploading files and displaying them with a focus on spee
 - **Fast Rendering:** Quick and responsive display of uploaded files.
 
 ---
+## 🤝 Contributing
+
+I would be thrilled to see your updates and contributions! If you have ideas, suggestions, or improvements, please feel free to contribute. Your input is highly valued.
+
+For more details on how to contribute, please check the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+
+Thank you for being a part of this project!
+---
 
 ## ⚙️ How It Works
 
