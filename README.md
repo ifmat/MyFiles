@@ -29,7 +29,9 @@ This system is built with a clean and efficient stack:
 I would be thrilled to see your updates and contributions! If you have ideas, suggestions, or improvements, please feel free to contribute. Your input is highly valued.
 
 Thank you for being a part of this project!
+
 ---
+
 ## 🚀 Quick Start
 
 ### Prerequisites
