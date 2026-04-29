@@ -78,7 +78,7 @@ function renderTree(node, parentElement, basePath = '') {
                 // const fileUrl = item.url;
 
                 div.innerHTML = `<img class="icon" src="${fileIcon}" alt="File Icon">
-                               <a href="${fileUrl}" target="_blank">${item.name}</a>`;
+                               <a href="core/db/download.php?file=${item.name}" target="_blank">${item.name}</a>`;
             }
             parentElement.appendChild(div);
         });
