@@ -2,7 +2,7 @@
 header('Content-Type: application/json');
 
 // مسیر دایرکتوری فایل‌ها
-$dir = __DIR__ . '/assets/files'; // این مسیر رو دقیق تنظیم کن
+$dir = __DIR__ . '../../../assets/files'; // این مسیر رو دقیق تنظیم کن
 
 // تابع بازگشتی برای خواندن دایرکتوری
 function scandir_recursive($path) {

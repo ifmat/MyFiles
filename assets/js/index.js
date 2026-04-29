@@ -92,7 +92,7 @@ function renderTree(node, parentElement, basePath = '') {
 function initExplorer() {
     // مسیر PHP خود را اینجا تنظیم کنید. اگر در همان پوشه است، 'list.php' کافیست.
     // اگر در پوشه دیگری است، مسیر کامل را بدهید.
-    fetch('./core/db/list.php')
+    fetch('core/db/list.php')
         .then(response => {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
