@@ -1,6 +1,5 @@
 <?php
 $baseDir = __DIR__ . '../../../assets/files/';
-
 $passwords = include('password.php');
 
 $file = $_GET['file'] ?? '';
