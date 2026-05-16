@@ -1,47 +1,52 @@
 <?php
 header('Content-Type: application/json');
+header('Access-Control-Allow-Origin: *');
 
-// مسیر دایرکتوری فایل‌ها
-$dir = __DIR__ . '../../../assets/files'; // این مسیر رو دقیق تنظیم کن
+// مسیر صحیح فایل‌ها
+$baseDir = __DIR__ . '/../../assets/files/';
 
-// تابع بازگشتی برای خواندن دایرکتوری
-function scandir_recursive($path) {
+function scandir_recursive($path, $relativePath = '') {
     $files = [];
-    $items = scandir($path);
+    if (!is_dir($path)) return $files;
 
+    $items = scandir($path);
     foreach ($items as $item) {
         if ($item == '.' || $item == '..') continue;
 
-        $item_path = $path . '/' . $item;
+        $fullPath = $path . '/' . $item;
+        $relative = $relativePath ? $relativePath . '/' . $item : $item;
 
-        if (is_dir($item_path)) {
+        if (is_dir($fullPath)) {
             $files[] = [
                 'type' => 'folder',
                 'name' => $item,
-                'children' => scandir_recursive($item_path)
+                'path' => $relative,
+                'children' => scandir_recursive($fullPath, $relative)
             ];
         } else {
+            $ext = strtolower(pathinfo($item, PATHINFO_EXTENSION));
             $files[] = [
                 'type' => 'file',
                 'name' => $item,
-                // اینجا می‌تونی مسیر کامل فایل رو هم اضافه کنی اگر لازم بود
-                // 'url' => str_replace($_SERVER['DOCUMENT_ROOT'], '', $item_path)
+                'path' => $relative,
+                'size' => filesize($fullPath),
+                'extension' => $ext,
+                'previewable' => in_array($ext, ['jpg','jpeg','png','gif','mp4','webm','pdf','txt'])
             ];
         }
     }
     return $files;
 }
 
-// اگر دایرکتوری وجود داشت، محتویاتش رو برگردون
-if (is_dir($dir)) {
+if (is_dir($baseDir)) {
     echo json_encode([
         'type' => 'folder',
-        'name' => 'root',
-        'children' => scandir_recursive($dir)
+        'name' => 'files',
+        'path' => '',
+        'children' => scandir_recursive($baseDir)
     ]);
 } else {
-    // اگر دایرکتوری نبود، پیغام خطا
     http_response_code(500);
-    echo json_encode(['error' => 'Directory not found or is not accessible.']);
+    echo json_encode(['error' => 'Directory not found: ' . $baseDir]);
 }
 ?>
