@@ -1,18 +1,122 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer | My Subdomain</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>File Explorer Pro | مدیریت حرفه‌ای فایل</title>
     <link rel="stylesheet" href="assets/css/style.css">
+    <style>
+        /* استایل‌های اضافه برای لاگین و آپلود مودال */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.8);
+            backdrop-filter: blur(15px);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal.active {
+            display: flex;
+        }
+        .modal-content {
+            background: linear-gradient(145deg, #1a1f2e, #0f1420);
+            padding: 2rem;
+            border-radius: 2rem;
+            width: 90%;
+            max-width: 500px;
+            border: 1px solid cyan;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+        .modal-content input, .modal-content button, .admin-panel input, .admin-panel button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 12px;
+            border: none;
+            background: #2a2f3f;
+            color: white;
+            font-size: 1rem;
+        }
+        .admin-panel {
+            background: #0a0f1c;
+            padding: 1rem;
+            border-radius: 1rem;
+            margin-top: 1rem;
+        }
+        .file-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+        .file-card {
+            background: rgba(30, 40, 60, 0.7);
+            backdrop-filter: blur(10px);
+            border-radius: 1rem;
+            padding: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            border: 1px solid rgba(0,255,255,0.2);
+        }
+        .file-card:hover {
+            transform: translateY(-5px);
+            border-color: cyan;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+        }
+        .file-preview {
+            max-width: 100%;
+            border-radius: 0.5rem;
+            margin-top: 0.5rem;
+        }
+        video, audio {
+            width: 100%;
+            border-radius: 1rem;
+        }
+    </style>
 </head>
 <body>
 <div class="navbar">
-    <h1>📁 File Explorer</h1>
+    <h1>📁 File Explorer Pro</h1>
+    <div>
+        <button id="adminBtn" class="refresh-btn">👑 پنل مدیریت</button>
+        <button id="refreshBtn" class="refresh-btn">🔄 بروزرسانی</button>
+    </div>
 </div>
 
 <div id="file-container" class="file-container">
     <div class="loading">در حال بارگذاری...</div>
+</div>
+
+<!-- مودال مدیریت -->
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <h2>🔐 ورود به پنل مدیریت</h2>
+        <input type="password" id="adminPassword" placeholder="رمز مدیریت">
+        <button id="loginAdminBtn">ورود</button>
+        <div id="adminPanel" class="admin-panel" style="display:none;">
+            <h3>➕ آپلود فایل جدید</h3>
+            <input type="file" id="uploadFile">
+            <button id="uploadBtn">آپلود</button>
+            <div id="uploadStatus"></div>
+            <hr>
+            <h3>📁 ساخت پوشه جدید</h3>
+            <input type="text" id="folderName" placeholder="نام پوشه">
+            <button id="createFolderBtn">ساخت پوشه</button>
+        </div>
+    </div>
+</div>
+
+<!-- مودال پیش‌نمایش فایل -->
+<div id="previewModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div id="previewContent"></div>
+        <button id="closePreviewBtn" style="margin-top:1rem;">بستن</button>
+    </div>
 </div>
 
 <script src="assets/js/index.js"></script>
