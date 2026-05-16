@@ -1,121 +1,205 @@
 const container = document.getElementById("file-container");
+let currentPath = '';
 
-// تابع کمکی برای تعیین آیکون فایل بر اساس نوع
-function getFileIcon(fileName) {
-    const extension = fileName.split('.').pop().toLowerCase();
-    switch(extension) {
-        case 'pdf': return 'assets/images/icon/pdf.jpg';
-        case 'doc': return 'assets/images/icon/word.png';
-        case 'docx': return 'assets/images/icon/word.png';
-        case 'xls': return 'assets/images/icon/xls.png';
-        case 'xlsx': return 'assets/images/icon/xls.png';
-        case 'jpg': return 'assets/images/icon/jpg.png';
-        case 'jpeg': return 'assets/images/icon/jpg.png';
-        case 'png': return 'assets/images/icon/jpg.png';
-        case 'mp4': return 'assets/images/icon/movies.png';
-        case 'mkv': return 'assets/images/icon/movies.png';
-        case 'gif': return 'assets/images/icon/gif.png';
-        case 'txt': return 'assets/images/icon/text.png';
-        default: return 'assets/images/icon/box.ico'; // آیکون پیش‌فرض
-    }
+function getFileIcon(fileName, extension) {
+    const icons = {
+        'pdf': '📕', 'doc': '📘', 'docx': '📘', 'xls': '📗', 'xlsx': '📗',
+        'jpg': '🖼️', 'jpeg': '🖼️', 'png': '🖼️', 'gif': '🎞️',
+        'mp4': '🎬', 'mkv': '🎬', 'webm': '🎬',
+        'mp3': '🎵', 'wav': '🎵',
+        'txt': '📄', 'zip': '🗜️', 'rar': '🗜️',
+        'folder': '📁'
+    };
+    if (extension === 'folder') return '📁';
+    return icons[extension] || '📄';
 }
 
-// تابع بازگشتی برای رندر کردن درخت فایل‌ها
-// node: داده‌های فعلی (پوشه یا فایل)
-// parentElement: عنصری که باید گره فعلی به آن اضافه شود
-// basePath: مسیر نسبی فعلی برای ساخت URL فایل‌ها
-function renderTree(node, parentElement, basePath = '') {
-    // اگر node یک پوشه است و دارای فرزندان است
-    if (node.type === "folder" && node.children && node.children.length > 0) {
+function formatSize(bytes) {
+    if (!bytes) return 'نامشخص';
+    const sizes = ['B', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(1024));
+    return (bytes / Math.pow(1024, i)).toFixed(2) + ' ' + sizes[i];
+}
+
+function previewFile(file) {
+    const modal = document.getElementById('previewModal');
+    const content = document.getElementById('previewContent');
+    const ext = file.extension;
+    const url = `core/db/download.php?file=${encodeURIComponent(file.path)}`;
+
+    if (['jpg','jpeg','png','gif'].includes(ext)) {
+        content.innerHTML = `<img src="${url}" style="max-width:100%; border-radius:10px;">`;
+    } else if (['mp4','webm'].includes(ext)) {
+        content.innerHTML = `<video controls autoplay style="width:100%"><source src="${url}"></video>`;
+    } else if (['mp3','wav'].includes(ext)) {
+        content.innerHTML = `<audio controls style="width:100%"><source src="${url}"></audio>`;
+    } else if (ext === 'pdf') {
+        content.innerHTML = `<iframe src="${url}" style="width:100%; height:500px;"></iframe>`;
+    } else {
+        content.innerHTML = `<p>پیش‌نمایش این فایل ممکن نیست. <a href="${url}" download>دانلود فایل</a></p>`;
+    }
+    modal.classList.add('active');
+}
+
+function renderTree(node, parentElement, currentPath = '') {
+    if (node.type === "folder" && node.children) {
         node.children.forEach(item => {
-            const div = document.createElement("div");
-            div.classList.add(item.type); // 'folder' یا 'file'
+            const card = document.createElement("div");
+            card.className = "file-card";
+            const icon = getFileIcon(item.name, item.type === 'folder' ? 'folder' : item.extension);
+            const itemPath = item.path;
 
-            // ساخت مسیر کامل برای آیتم فعلی
-            // اگر node.path از PHP آمده باشد، می توان از آن استفاده کرد
-            // در غیر این صورت، مسیر را بر اساس basePath و نام آیتم می‌سازیم
-            const currentItemPath = item.path ? item.path : (basePath ? `${basePath}/${item.name}` : item.name);
-            // توجه: اگر PHP مسیر نسبی صحیح را برمی‌گرداند، از item.path استفاده کنید.
-            // در غیر این صورت، این خطوط مسیر را می‌سازند:
-            // const currentItemPath = basePath ? `${basePath}/${item.name}` : item.name;
+            card.innerHTML = `
+                <div class="file-icon">${icon}</div>
+                <div class="file-name">${escapeHtml(item.name)}</div>
+                ${item.type === 'file' ? `<div class="file-meta">📏 ${formatSize(item.size)}</div>` : ''}
+                <div class="file-actions">
+                    ${item.type === 'file' ? `
+                        <button class="download-btn" data-path="${itemPath}">⬇️ دانلود</button>
+                        ${item.previewable ? `<button class="preview-btn" data-path="${itemPath}" data-ext="${item.extension}">👁️ پیش‌نمایش</button>` : ''}
+                    ` : `
+                        <button class="open-folder" data-path="${itemPath}">📂 باز کردن</button>
+                    `}
+                </div>
+            `;
 
-
-            if (item.type === "folder") {
-                // آیکون پوشه - می‌توان آن را بر اساس وضعیت باز/بسته بودن تغییر داد
-                // در ابتدا، فرض می‌کنیم پوشه بسته است
-                let folderIconSrc = 'assets/images/icon/vampire.ico'; // آیکون پیش‌فرض پوشه بسته
-
-                div.innerHTML = `<img class="icon" src="${folderIconSrc}" alt="Folder Icon">
-                               <span>${item.name}</span>`;
-
-                div.addEventListener("click", (e) => {
-                    e.stopPropagation();
-                    const subfolderElement = div.querySelector(".subfolder");
-                    const iconElement = div.querySelector('.icon');
-
-                    if (subfolderElement) {
-                        // پوشه باز است، آن را ببند
-                        subfolderElement.remove();
-                        iconElement.src = 'assets/images/icon/vampire.ico'; // آیکون پوشه بسته
-                    } else {
-                        // پوشه بسته است، آن را باز کن
-                        const subfolder = document.createElement("div");
-                        subfolder.classList.add("subfolder");
-                        // فراخوانی مجدد renderTree برای فرزندان این پوشه
-                        // مسیر پایه برای فرزندان، مسیر فعلی آیتم است
-                        renderTree(item, subfolder, currentItemPath);
-                        div.appendChild(subfolder);
-                        iconElement.src = 'assets/images/icon/pirate.ico'; // آیکون پوشه باز
-                    }
-                });
-            } else { // item.type === "file"
-                const fileIcon = getFileIcon(item.name);
-                // استفاده از مسیر کامل فایل برای لینک
-                // اگر PHP کلید 'path' را برمی‌گرداند، از آن استفاده کنید.
-                // در غیر این صورت، مسیر را از basePath و نام فایل می‌سازیم.
-                const fileUrl = item.path ? `./assets/files/${item.path}` : `./assets/files/${currentItemPath}`;
-                // اگر PHP مستقیما URL قابل دسترسی را بدهد، از آن استفاده کنید:
-                // const fileUrl = item.url;
-
-                div.innerHTML = `<img class="icon" src="${fileIcon}" alt="File Icon">
-                <a href="core/db/download.php?file=${item.relativePath}" target="_blank">${item.name}</a>`;
-            }
-            parentElement.appendChild(div);
+            parentElement.appendChild(card);
         });
-    } else if (node.type === "file") {
-        // اگر گره فعلی خودش یک فایل باشد (که در ساختار فعلی کمتر پیش می‌آید مگر اینکه root یک فایل باشد)
-        // این بخش ممکن است نیاز به تنظیمات بیشتری داشته باشد
     }
 }
 
+function loadFiles() {
+    container.innerHTML = '<div class="loading">🌀 بارگذاری فایل‌ها...</div>';
 
-function initExplorer() {
-    // مسیر PHP خود را اینجا تنظیم کنید. اگر در همان پوشه است، 'list.php' کافیست.
-    // اگر در پوشه دیگری است، مسیر کامل را بدهید.
     fetch('core/db/list.php')
-        .then(response => {
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-            return response.json();
-        })
+        .then(res => res.json())
         .then(data => {
-            container.innerHTML = ""; // پاک کردن پیام بارگذاری
+            container.innerHTML = '';
+            const grid = document.createElement('div');
+            grid.className = 'file-grid';
 
             if (data.error) {
                 container.innerHTML = `<div class="error">${data.error}</div>`;
-            } else {
-                // شروع رندر از ریشه، با استفاده از مسیر پایه 'assets/files'
-                // اگر PHP کلید 'path' برای ریشه برگرداند، از آن استفاده کنید.
-                // اگر PHP کلید 'path' را برگرداند: renderTree(data, container, data.path);
-                renderTree(data, container, 'assets/files');
+                return;
             }
+
+            renderTree(data, grid, '');
+            container.appendChild(grid);
+
+            // افزودن رویداد به دکمه‌ها
+            document.querySelectorAll('.download-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const path = btn.dataset.path;
+                    window.location.href = `core/db/download.php?file=${encodeURIComponent(path)}`;
+                });
+            });
+
+            document.querySelectorAll('.preview-btn').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const path = btn.dataset.path;
+                    const ext = btn.dataset.ext;
+                    previewFile({path: path, extension: ext});
+                });
+            });
+
+            document.querySelectorAll('.open-folder').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    alert('🚧 قابلیت باز کردن فولدر در حال توسعه است');
+                });
+            });
         })
-        .catch(error => {
-            console.error('Error fetching file list:', error);
-            container.innerHTML = `<div class="error">خطا در بارگذاری لیست فایل‌ها: ${error.message}</div>`;
+        .catch(err => {
+            container.innerHTML = `<div class="error">❌ خطا: ${err.message}</div>`;
         });
 }
 
-// اطمینان از اینکه DOM آماده است
-document.addEventListener('DOMContentLoaded', initExplorer);
+// پنل مدیریت
+let adminLoggedIn = false;
+
+document.getElementById('adminBtn').addEventListener('click', () => {
+    document.getElementById('adminModal').classList.add('active');
+});
+
+document.getElementById('loginAdminBtn').addEventListener('click', () => {
+    const pass = document.getElementById('adminPassword').value;
+    fetch('core/db/admin.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `action=login&password=${encodeURIComponent(pass)}`
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                adminLoggedIn = true;
+                document.getElementById('adminPanel').style.display = 'block';
+                alert('ورود موفق!');
+            } else {
+                alert('رمز اشتباه است');
+            }
+        });
+});
+
+document.getElementById('uploadBtn').addEventListener('click', () => {
+    const fileInput = document.getElementById('uploadFile');
+    if (!fileInput.files[0]) return;
+
+    const formData = new FormData();
+    formData.append('action', 'upload');
+    formData.append('file', fileInput.files[0]);
+
+    fetch('core/db/admin.php', {
+        method: 'POST',
+        body: formData
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('آپلود موفق!');
+                loadFiles();
+            } else {
+                alert('خطا: ' + data.error);
+            }
+        });
+});
+
+document.getElementById('createFolderBtn').addEventListener('click', () => {
+    const name = document.getElementById('folderName').value;
+    if (!name) return;
+
+    fetch('core/db/admin.php', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/x-www-form-urlencoded'},
+        body: `action=create_folder&name=${encodeURIComponent(name)}&path=`
+    })
+        .then(res => res.json())
+        .then(data => {
+            if (data.success) {
+                alert('پوشه ساخته شد!');
+                loadFiles();
+            } else {
+                alert('خطا: ' + data.error);
+            }
+        });
+});
+
+document.getElementById('refreshBtn').addEventListener('click', loadFiles);
+document.querySelectorAll('.modal .modal-content button:last-child').forEach(btn => {
+    if(btn.id !== 'closePreviewBtn') return;
+    btn.addEventListener('click', () => {
+        document.getElementById('previewModal').classList.remove('active');
+    });
+});
+
+function escapeHtml(str) {
+    return str.replace(/[&<>]/g, function(m) {
+        if (m === '&') return '&amp;';
+        if (m === '<') return '&lt;';
+        if (m === '>') return '&gt;';
+        return m;
+    });
+}
+
+document.addEventListener('DOMContentLoaded', loadFiles);
