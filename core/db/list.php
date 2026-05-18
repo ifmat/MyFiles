@@ -1,52 +1,30 @@
 <?php
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
 
-// مسیر صحیح فایل‌ها
 $baseDir = __DIR__ . '/../../assets/files/';
+$path = isset($_GET['path']) ? $_GET['path'] : '';
 
-function scandir_recursive($path, $relativePath = '') {
-    $files = [];
-    if (!is_dir($path)) return $files;
+$fullPath = $baseDir . ($path ? $path . '/' : '');
 
-    $items = scandir($path);
-    foreach ($items as $item) {
-        if ($item == '.' || $item == '..') continue;
+$result = [];
+if (is_dir($fullPath)) {
+    $files = scandir($fullPath);
+    foreach ($files as $file) {
+        if ($file == '.' || $file == '..') continue;
+        if ($file == 'list.php' || $file == 'admin.php') continue;
 
-        $fullPath = $path . '/' . $item;
-        $relative = $relativePath ? $relativePath . '/' . $item : $item;
+        $fullFilePath = $fullPath . $file;
+        $isDir = is_dir($fullFilePath);
 
-        if (is_dir($fullPath)) {
-            $files[] = [
-                'type' => 'folder',
-                'name' => $item,
-                'path' => $relative,
-                'children' => scandir_recursive($fullPath, $relative)
-            ];
-        } else {
-            $ext = strtolower(pathinfo($item, PATHINFO_EXTENSION));
-            $files[] = [
-                'type' => 'file',
-                'name' => $item,
-                'path' => $relative,
-                'size' => filesize($fullPath),
-                'extension' => $ext,
-                'previewable' => in_array($ext, ['jpg','jpeg','png','gif','mp4','webm','pdf','txt'])
-            ];
-        }
+        $result[] = [
+            'type' => $isDir ? 'folder' : 'file',
+            'name' => $file,
+            'path' => $path ? $path . '/' . $file : $file,
+            'extension' => $isDir ? 'folder' : pathinfo($file, PATHINFO_EXTENSION),
+            'previewable' => !$isDir && in_array(pathinfo($file, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif','mp4','webm','mp3','wav','pdf','txt'])
+        ];
     }
-    return $files;
 }
 
-if (is_dir($baseDir)) {
-    echo json_encode([
-        'type' => 'folder',
-        'name' => 'files',
-        'path' => '',
-        'children' => scandir_recursive($baseDir)
-    ]);
-} else {
-    http_response_code(500);
-    echo json_encode(['error' => 'Directory not found: ' . $baseDir]);
-}
+echo json_encode(['children' => $result]);
 ?>
