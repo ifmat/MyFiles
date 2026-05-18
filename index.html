@@ -3,187 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer Pro | مدیریت حرفه‌ای فایل</title>
-    <link rel="stylesheet" href="assets/css/style.css">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            background: linear-gradient(135deg, #0a0f1c 0%, #0c1222 100%);
-            font-family: 'Segoe UI', Tahoma, system-ui, sans-serif;
-            color: #eef4ff;
-            min-height: 100vh;
-            padding: 20px;
-        }
-
-        .navbar {
-            background: rgba(15, 25, 45, 0.8);
-            backdrop-filter: blur(12px);
-            border-radius: 20px;
-            padding: 15px 25px;
-            margin-bottom: 25px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border: 1px solid rgba(0, 255, 255, 0.3);
-        }
-
-        .navbar h1 {
-            background: linear-gradient(135deg, #fff, #00ccff);
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-        }
-
-        .refresh-btn {
-            background: #1e3a5f;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 30px;
-            color: white;
-            cursor: pointer;
-            transition: 0.2s;
-            font-weight: bold;
-            margin-right: 10px;
-        }
-
-        .refresh-btn:hover {
-            background: #00aaff;
-            transform: scale(0.95);
-        }
-
-        .file-container {
-            background: rgba(8, 14, 26, 0.5);
-            backdrop-filter: blur(5px);
-            border-radius: 20px;
-            padding: 20px;
-            min-height: 500px;
-        }
-
-        .loading {
-            text-align: center;
-            padding: 50px;
-            font-size: 1.3rem;
-            animation: pulse 1s infinite;
-        }
-
-        @keyframes pulse {
-            0% {
-                opacity: 0.6;
-            }
-            100% {
-                opacity: 1;
-            }
-        }
-
-        .file-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-            gap: 1rem;
-        }
-
-        .file-card {
-            background: linear-gradient(135deg, rgba(30, 40, 60, 0.9), rgba(20, 28, 45, 0.95));
-            border-radius: 15px;
-            padding: 15px;
-            transition: all 0.25s ease;
-            cursor: pointer;
-            border-right: 4px solid #00aaff;
-        }
-
-        .file-card:hover {
-            transform: translateY(-5px);
-            border-right-color: #00ffff;
-        }
-
-        .file-icon {
-            font-size: 3rem;
-            text-align: center;
-        }
-
-        .file-name {
-            font-weight: bold;
-            text-align: center;
-            word-break: break-word;
-            margin: 10px 0;
-        }
-
-        .file-actions {
-            display: flex;
-            gap: 10px;
-            justify-content: center;
-            margin-top: 10px;
-        }
-
-        .file-actions button {
-            background: #2a3f5f;
-            border: none;
-            padding: 5px 12px;
-            border-radius: 20px;
-            color: white;
-            cursor: pointer;
-        }
-
-        .file-actions button:hover {
-            background: #00aaff;
-        }
-
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(15px);
-            z-index: 2000;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .modal.active {
-            display: flex;
-        }
-
-        .modal-content {
-            background: linear-gradient(145deg, #1a1f2e, #0f1420);
-            padding: 2rem;
-            border-radius: 2rem;
-            width: 90%;
-            max-width: 500px;
-            border: 1px solid cyan;
-        }
-
-        .modal-content input, .modal-content button {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border-radius: 12px;
-            border: none;
-            background: #2a2f3f;
-            color: white;
-        }
-
-        .admin-panel {
-            background: #0a0f1c;
-            padding: 1rem;
-            border-radius: 1rem;
-            margin-top: 1rem;
-            display: none;
-        }
-
-        .error-message, .empty-message {
-            text-align: center;
-            padding: 50px;
-            background: rgba(0, 0, 0, 0.4);
-            border-radius: 20px;
-        }
-    </style>
+    <title>File Explorer Pro</title>
+    <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
 <div class="navbar">
@@ -194,11 +15,11 @@
     </div>
 </div>
 
+<div id="breadcrumb" class="breadcrumb"></div>
 <div id="file-container" class="file-container">
     <div class="loading">🌀 بارگذاری فایل‌ها...</div>
 </div>
 
-<!-- مودال مدیریت -->
 <div id="adminModal" class="modal">
     <div class="modal-content">
         <h2>🔐 ورود به پنل مدیریت</h2>
@@ -208,24 +29,23 @@
             <h3>➕ آپلود فایل جدید</h3>
             <input type="file" id="uploadFile">
             <button id="uploadBtn">آپلود</button>
-            <div id="uploadStatus"></div>
+            <div id="uploadStatus" style="color:#ffaa00;"></div>
             <hr>
             <h3>📁 ساخت پوشه جدید</h3>
             <input type="text" id="folderName" placeholder="نام پوشه">
             <button id="createFolderBtn">ساخت پوشه</button>
+            <div id="folderStatus" style="color:#ffaa00;"></div>
         </div>
         <button id="closeAdminModal" style="background:#ff4444;">بستن</button>
     </div>
 </div>
 
-<!-- مودال پیش‌نمایش -->
 <div id="previewModal" class="modal">
     <div class="modal-content" style="max-width: 800px;">
         <div id="previewContent"></div>
         <button id="closePreviewBtn" style="background:#ff4444; margin-top:1rem;">بستن</button>
     </div>
 </div>
-
 <script src="assets/js/index.js"></script>
 </body>
 </html>
