@@ -1,20 +1,51 @@
 <!DOCTYPE html>
-<html lang="fa">
+<html lang="fa" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>File Explorer | My Subdomain</title>
-    <link rel="stylesheet" href="assets/css/style.css">
+    <title>File Explorer Pro</title>
+    <link href="assets/css/style.css" rel="stylesheet">
 </head>
 <body>
 <div class="navbar">
-    <h1>📁 File Explorer</h1>
+    <h1>📁 File Explorer Pro</h1>
+    <div>
+        <button id="adminBtn" class="refresh-btn">👑 پنل مدیریت</button>
+        <button id="refreshBtn" class="refresh-btn">🔄 بروزرسانی</button>
+    </div>
 </div>
 
+<div id="breadcrumb" class="breadcrumb"></div>
 <div id="file-container" class="file-container">
-    <div class="loading">در حال بارگذاری...</div>
+    <div class="loading">🌀 بارگذاری فایل‌ها...</div>
 </div>
 
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <h2>🔐 ورود به پنل مدیریت</h2>
+        <input type="password" id="adminPassword" placeholder="رمز مدیریت">
+        <button id="loginAdminBtn">ورود</button>
+        <div id="adminPanel" class="admin-panel">
+            <h3>➕ آپلود فایل جدید</h3>
+            <input type="file" id="uploadFile">
+            <button id="uploadBtn">آپلود</button>
+            <div id="uploadStatus" style="color:#ffaa00;"></div>
+            <hr>
+            <h3>📁 ساخت پوشه جدید</h3>
+            <input type="text" id="folderName" placeholder="نام پوشه">
+            <button id="createFolderBtn">ساخت پوشه</button>
+            <div id="folderStatus" style="color:#ffaa00;"></div>
+        </div>
+        <button id="closeAdminModal" style="background:#ff4444;">بستن</button>
+    </div>
+</div>
+
+<div id="previewModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <div id="previewContent"></div>
+        <button id="closePreviewBtn" style="background:#ff4444; margin-top:1rem;">بستن</button>
+    </div>
+</div>
 <script src="assets/js/index.js"></script>
 </body>
 </html>

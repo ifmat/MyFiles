@@ -1,47 +1,30 @@
 <?php
 header('Content-Type: application/json');
 
-// مسیر دایرکتوری فایل‌ها
-$dir = __DIR__ . '../../../assets/files'; // این مسیر رو دقیق تنظیم کن
+$baseDir = __DIR__ . '/../../assets/files/';
+$path = isset($_GET['path']) ? $_GET['path'] : '';
 
-// تابع بازگشتی برای خواندن دایرکتوری
-function scandir_recursive($path) {
-    $files = [];
-    $items = scandir($path);
+$fullPath = $baseDir . ($path ? $path . '/' : '');
 
-    foreach ($items as $item) {
-        if ($item == '.' || $item == '..') continue;
+$result = [];
+if (is_dir($fullPath)) {
+    $files = scandir($fullPath);
+    foreach ($files as $file) {
+        if ($file == '.' || $file == '..') continue;
+        if ($file == 'list.php' || $file == 'admin.php') continue;
 
-        $item_path = $path . '/' . $item;
+        $fullFilePath = $fullPath . $file;
+        $isDir = is_dir($fullFilePath);
 
-        if (is_dir($item_path)) {
-            $files[] = [
-                'type' => 'folder',
-                'name' => $item,
-                'children' => scandir_recursive($item_path)
-            ];
-        } else {
-            $files[] = [
-                'type' => 'file',
-                'name' => $item,
-                // اینجا می‌تونی مسیر کامل فایل رو هم اضافه کنی اگر لازم بود
-                // 'url' => str_replace($_SERVER['DOCUMENT_ROOT'], '', $item_path)
-            ];
-        }
+        $result[] = [
+            'type' => $isDir ? 'folder' : 'file',
+            'name' => $file,
+            'path' => $path ? $path . '/' . $file : $file,
+            'extension' => $isDir ? 'folder' : pathinfo($file, PATHINFO_EXTENSION),
+            'previewable' => !$isDir && in_array(pathinfo($file, PATHINFO_EXTENSION), ['jpg','jpeg','png','gif','mp4','webm','mp3','wav','pdf','txt'])
+        ];
     }
-    return $files;
 }
 
-// اگر دایرکتوری وجود داشت، محتویاتش رو برگردون
-if (is_dir($dir)) {
-    echo json_encode([
-        'type' => 'folder',
-        'name' => 'root',
-        'children' => scandir_recursive($dir)
-    ]);
-} else {
-    // اگر دایرکتوری نبود، پیغام خطا
-    http_response_code(500);
-    echo json_encode(['error' => 'Directory not found or is not accessible.']);
-}
+echo json_encode(['children' => $result]);
 ?>
