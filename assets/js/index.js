@@ -35,7 +35,7 @@
 
     function updateBreadcrumb() {
     if (!breadcrumbDiv) return;
-    let html = '📍 مسیر: ';
+    let html = '📍 Root: ';
     if (currentPathParts.length === 0) {
     html += '<span onclick="goToRoot()">ریشه</span>';
 } else {
